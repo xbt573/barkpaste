@@ -103,7 +103,9 @@ var rootCmd = &cobra.Command{
 
 		pc := pasteController.New(ps)
 
-		a := app.New(pc, app.Options{})
+		a := app.New(pc, app.Options{
+			BodyLimit: config.Settings.BodyLimit,
+		})
 
 		ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
 		defer cancel()
