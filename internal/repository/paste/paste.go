@@ -32,7 +32,7 @@ func New(db *gorm.DB) (Repository, error) {
 }
 
 func (c *concreteRepository) Create(paste models.Paste) (models.Paste, error) {
-	result := c.db.Create(paste)
+	result := c.db.Create(&paste)
 
 	return paste, result.Error
 }

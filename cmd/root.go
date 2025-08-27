@@ -36,6 +36,7 @@ func init() {
 
 	rootCmd.PersistentFlags().DurationVar(&config.Settings.TTL, "ttl", time.Hour*24, "TTL of pastes (default to 1d)")
 	rootCmd.PersistentFlags().UintVar(&config.Settings.Limit, "limit", 1*1024*1024, "Maximum size of paste (default to 1 MB, uint)")
+	rootCmd.PersistentFlags().UintVar(&config.Settings.BodyLimit, "bodylimit", 200*1024*1024, "Maximum size of body (default to 200 MB, uint)")
 	// FIXME: поменяй на норм перед релизом, а то засмеют
 	rootCmd.PersistentFlags().StringVar(&config.Settings.Token, "token", "verycooltokensir", "Default token (CHANGE TO SECURE)")
 

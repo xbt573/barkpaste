@@ -13,6 +13,7 @@ type App struct {
 }
 
 type Options struct {
+	BodyLimit uint
 }
 
 func New(pasteController paste.Controller, opts Options) *App {
@@ -22,6 +23,7 @@ func New(pasteController paste.Controller, opts Options) *App {
 func (a *App) Listen(addr string, ctx context.Context) error {
 	f := fiber.New(fiber.Config{
 		DisableStartupMessage: true,
+		BodyLimit:             int(a.options.BodyLimit),
 	})
 
 	f.Post("/token", a.pasteController.CreateToken)

@@ -9,9 +9,10 @@ type Config struct {
 }
 
 type Settings struct {
-	TTL   time.Duration `mapstructure:"ttl"`
-	Limit uint          `mapstructure:"limit"`
-	Token string        `mapstructure:"token"`
+	TTL       time.Duration `mapstructure:"ttl"`
+	Limit     uint          `mapstructure:"limit"`
+	BodyLimit uint          `mapstructure:"bodylimit"`
+	Token     string        `mapstructure:"token"`
 }
 
 type Database struct {
