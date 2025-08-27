@@ -133,9 +133,7 @@ func (c *concreteController) CreatePersistent(ctx *fiber.Ctx) error {
 	paste, err := c.pasteService.CreatePersistent(token, id, body, ttl)
 	if err != nil {
 		if errors.Is(err, pasteService.ErrExists) {
-			return ctx.Status(fiber.StatusConflict).SendString(
-				"this paste already exists, but should not. consider this your lucky day! :D",
-			)
+			return ctx.SendStatus(fiber.StatusConflict)
 		}
 
 		if errors.Is(err, pasteService.ErrInvalidRequest) {
