@@ -9,6 +9,7 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	pasteService "github.com/xbt573/barkpaste/internal/service/paste"
+	"golang.org/x/net/idna"
 )
 
 type Controller interface {
@@ -157,6 +158,11 @@ func (c *concreteController) CreatePersistent(ctx *fiber.Ctx) error {
 	host := ctx.Hostname()
 
 	url := fmt.Sprintf("%v://%v/%v", scheme, host, paste.ID)
+
+	url, err = idna.ToUnicode(url)
+	if err != nil {
+		slog.Error("shouldn't happen", "err", err)
+	}
 
 	ctx.Set("X-Expires-At", paste.ExpiredAt.Format(time.RFC3339))
 	ctx.Set("Content-Location", "/"+paste.ID)
