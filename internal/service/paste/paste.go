@@ -21,7 +21,8 @@ var (
 )
 
 type Service interface {
-	CreateRegular(content []byte, userTTL time.Duration) (models.Paste, error)
+	// token == "" is fine
+	CreateRegular(token string, content []byte, userTTL time.Duration) (models.Paste, error)
 	CreatePersistent(token, name string, content []byte, userTTL time.Duration) (models.Paste, error)
 
 	Get(id string) (models.Paste, error)
@@ -79,9 +80,9 @@ func (c *concreteService) CreatePersistent(token string, name string, content []
 	}
 
 	// TODO: да, почини эту хуйню, ещё вспомни завтра что надо было чинить
-	if len(content) > int(c.options.Limit) {
-		return models.Paste{}, ErrTooBig
-	}
+	// if len(content) > int(c.options.Limit) {
+	// 	return models.Paste{}, ErrTooBig
+	// }
 
 	if len(content) < 1 {
 		return models.Paste{}, ErrInvalidRequest
@@ -111,8 +112,17 @@ func (c *concreteService) CreatePersistent(token string, name string, content []
 	return paste, nil
 }
 
-func (c *concreteService) CreateRegular(content []byte, userTTL time.Duration) (models.Paste, error) {
-	if len(content) > int(c.options.Limit) {
+func (c *concreteService) CreateRegular(token string, content []byte, userTTL time.Duration) (models.Paste, error) {
+	authorized, err := c.tokenRepository.Exists(token)
+	if err != nil {
+		return models.Paste{}, err
+	}
+
+	if token != "" && !authorized {
+		return models.Paste{}, ErrUnauthorized
+	}
+
+	if len(content) > int(c.options.Limit) && !authorized {
 		return models.Paste{}, ErrTooBig
 	}
 
@@ -124,7 +134,13 @@ func (c *concreteService) CreateRegular(content []byte, userTTL time.Duration) (
 		c.options.TTL = time.Hour * 24
 	}
 
-	ttl := min(userTTL, c.options.TTL)
+	var ttl time.Duration
+
+	if authorized {
+		ttl = userTTL
+	} else {
+		ttl = min(userTTL, c.options.TTL)
+	}
 
 	paste := models.Paste{
 		ID:        nanoid.Must(8),
@@ -132,7 +148,7 @@ func (c *concreteService) CreateRegular(content []byte, userTTL time.Duration) (
 		ExpiredAt: time.Now().Add(ttl),
 	}
 
-	paste, err := c.pasteRepository.Create(paste)
+	paste, err = c.pasteRepository.Create(paste)
 	if err != nil {
 		if errors.Is(err, gorm.ErrDuplicatedKey) {
 			err = ErrExists

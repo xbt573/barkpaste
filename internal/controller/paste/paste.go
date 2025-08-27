@@ -35,6 +35,13 @@ func New(pasteService pasteService.Service) Controller {
 }
 
 func (c *concreteController) CreateRegular(ctx *fiber.Ctx) error {
+	token := ""
+
+	rawToken := ctx.Get("Authorization")
+	if rawToken != "" {
+		fmt.Sscanf(rawToken, "Bearer %v", &token)
+	}
+
 	now := time.Now()
 	body := ctx.Body()
 
@@ -58,12 +65,16 @@ func (c *concreteController) CreateRegular(ctx *fiber.Ctx) error {
 		ttl = t.Sub(now)
 	}
 
-	paste, err := c.pasteService.CreateRegular(body, ttl)
+	paste, err := c.pasteService.CreateRegular(token, body, ttl)
 	if err != nil {
 		if errors.Is(err, pasteService.ErrExists) {
 			return ctx.Status(fiber.StatusConflict).SendString(
 				"this paste already exists, but should not. consider this your lucky day! :D",
 			)
+		}
+
+		if errors.Is(err, pasteService.ErrUnauthorized) {
+			return ctx.SendStatus(fiber.StatusUnauthorized)
 		}
 
 		if errors.Is(err, pasteService.ErrInvalidRequest) {
