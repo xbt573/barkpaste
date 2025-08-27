@@ -84,12 +84,12 @@ func (c *concreteController) CreateRegular(ctx *fiber.Ctx) error {
 	}
 
 	host := ctx.Hostname()
-
-	url := fmt.Sprintf("%v://%v/%v", scheme, host, paste.ID)
-	url, err = idna.ToUnicode(url)
+	host, err = idna.ToUnicode(host)
 	if err != nil {
 		slog.Error("shouldn't happen", "err", err)
 	}
+
+	url := fmt.Sprintf("%v://%v/%v", scheme, host, paste.ID)
 
 	ctx.Set("X-Expires-At", paste.ExpiredAt.Format(time.RFC3339))
 	ctx.Set("Content-Location", "/"+paste.ID)
@@ -160,13 +160,12 @@ func (c *concreteController) CreatePersistent(ctx *fiber.Ctx) error {
 	}
 
 	host := ctx.Hostname()
-
-	url := fmt.Sprintf("%v://%v/%v", scheme, host, paste.ID)
-
-	url, err = idna.ToUnicode(url)
+	host, err = idna.ToUnicode(host)
 	if err != nil {
 		slog.Error("shouldn't happen", "err", err)
 	}
+
+	url := fmt.Sprintf("%v://%v/%v", scheme, host, paste.ID)
 
 	ctx.Set("X-Expires-At", paste.ExpiredAt.Format(time.RFC3339))
 	ctx.Set("Content-Location", "/"+paste.ID)
